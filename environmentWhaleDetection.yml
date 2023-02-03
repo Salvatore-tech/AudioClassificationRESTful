@@ -1,0 +1,10 @@
+name: dspWhale_keras
+channels:
+  - defaults
+dependencies:
+  - python=3.8
+  - tensorflow
+  - scikit-learn
+  - pandas
+  - matplotlib
+prefix: /home/saso/anaconda3/envs/dspWhale_keras
