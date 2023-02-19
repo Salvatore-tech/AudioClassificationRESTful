@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Home{% endblock %}
+{% block content%}
+
+<section class="jumbotron text-center">
+    <div class="container">
+        <h1 class="jumbotron-heading"> Ready to detect whale calls?</h1>
+        <p class="lead text-muted">Something short and leading about the collection below—its contents, the creator,
+            etc. Make it short and sweet, but not too short so folks don't simply skip over it entirely.</p>
+        <p>
+            <!-- Button trigger modal -->
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                Launch demo modal
+            </button>
+        </p>
+    </div>
+</section>
+
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Upload audio</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="formFile" class="form-label">Default file input example</label>
+                    <input class="form-control" type="file" id="formFile">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Save changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+{% block additionalJs %}
+console.log('hello');
+
+
+const fileElem=document.querySelector('#formFile');
+if (fileElem){
+fileElem.addEventListener('change', function (e) {
+console.log('Detected a file input change');
+let file = fileElem.files[0];
+let formData = new FormData();
+
+formData.append("file", file);
+fetch('/classify/upload', {method: "POST", body: formData});
+})
+}
+
+{% endblock %}

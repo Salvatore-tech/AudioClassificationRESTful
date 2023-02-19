@@ -1,0 +1,13 @@
+1) Import the conda enviroment (we put all the dependencies there, without messing with
+    python packages installed globally):
+        conda env create --file envAudioClassificationREST.yaml
+
+2) Activate the new environment:
+        conda activate AudioClassificationREST
+
+3) Set Flask env variables (development is to run it in debug mode):
+        export FLASK_APP=app.py
+        export FLASK_ENV=development
+
+4) Start the server:
+        flask run
