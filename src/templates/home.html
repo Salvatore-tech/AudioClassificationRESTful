@@ -2,19 +2,32 @@
 {% block title %}Home{% endblock %}
 {% block content%}
 
-<section class="jumbotron text-center">
-    <div class="container">
-        <h1 class="jumbotron-heading"> Ready to detect whale calls?</h1>
-        <p class="lead text-muted">Something short and leading about the collection below—its contents, the creator,
-            etc. Make it short and sweet, but not too short so folks don't simply skip over it entirely.</p>
-        <p>
-            <!-- Button trigger modal -->
+<div class="px-4 py-5 my-5 text-center">
+    <h1 class="display-5 fw-bold"> Ready to detect whale calls?</h1>
+
+    <div class="col-lg-6 mx-auto">
+        <p class="lead text-muted"> Help reducing the impact of commercial shipping on the ocean's environment,
+            especially
+            as it relates to the influence of cumulative noise “footprints” on the great whales.
+        </p>
+        <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
             <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
                 Launch demo modal
             </button>
-        </p>
+        </div>
     </div>
-</section>
+</div>
+
+
+{% with messages = get_flashed_messages() %}
+{% if messages %}
+<ul class=flashes>
+    {% for message in messages %}
+    <li>{{ message }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+{% endwith %}
 
 <!-- Modal -->
 <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel"
@@ -32,8 +45,13 @@
                 </div>
             </div>
             <div class="modal-footer">
+                <form action="/classify/predict" method="post">
+                    <button name="saveChanges" value="saveChanges" class="btn btn-primary" data-bs-dismiss="modal">
+                        Save
+                        changes
+                    </button>
+                </form>
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Save changes</button>
             </div>
         </div>
     </div>

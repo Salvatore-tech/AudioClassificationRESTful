@@ -1,11 +1,15 @@
 import os
 
+import numpy as np
 from flask import Blueprint, request, flash, url_for, render_template
 from werkzeug.utils import secure_filename, redirect
 from flask_wtf import FlaskForm
 from wtforms import FileField
+import librosa as lr
+import tensorflow as tf
 
-from src.shared import UPLOAD_FOLDER
+import shared
+from src.shared import UPLOAD_FOLDER, SAMPLE_RATE
 
 ALLOWED_AUDIO_EXTENSIONS = {'aiff'}
 classify = Blueprint("classify", __name__)
@@ -17,13 +21,13 @@ def upload_file():
 
     # check if the post request has the file part
     if 'file' not in request.files:
-        flash('No file part')
+        #flash('No file part')
         return redirect("/home")
 
     uploaded_file = request.files['file']
 
     if uploaded_file.filename == '':
-        flash('No selected file')
+        # flash('No selected file')
         return redirect("/home")
 
     if not allowed_file(uploaded_file.filename):
@@ -43,12 +47,23 @@ def allowed_file(filename):
         filename.rsplit('.', 1)[1].lower() in ALLOWED_AUDIO_EXTENSIONS
 
 
-@classify.route("/detect")
-def submit():
-    f = request.files['file']
-    f.save(secure_filename(f.filename))
-    return 'file uploaded successfully'
+@classify.route("/predict", methods=['POST'])
+def predict_whale():
+    audio, _ = lr.load(os.path.join(UPLOAD_FOLDER, 'train29997.aiff'), sr=SAMPLE_RATE, res_type='kaiser_fast')
+    mel_spectrogram = np.array(get_melspectrogram(audio))
+    mel_spectrogram = tf.expand_dims(mel_spectrogram, axis=-1)
+    prediction = shared.model.predict_classes(mel_spectrogram).ravel()[0]
+    if (np.bool(prediction)):
+        flash('Congrats! Whale detected')
+    else:
+        flash('That was not a whale, try again')
+    # print('Predicted: ' + np.str(prediction))
+    return redirect("/home")
 
+def get_melspectrogram(audio):
+    X = []
+    X.append(lr.feature.melspectrogram(y=audio, sr=SAMPLE_RATE, n_mels=50))
+    return X
 
 class MyForm(FlaskForm):
     all = FileField('all')

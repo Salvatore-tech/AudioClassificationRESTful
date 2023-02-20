@@ -1,25 +1,10 @@
-import os
-
-import librosa as lr
-import numpy as np
-import tensorflow as tf
-from flask import flash
 from keras.api import keras
 from tensorflow.python.keras.models import model_from_json
 
+import shared
 from src.classify import classify
-from src.shared import UPLOAD_FOLDER, SAMPLE_RATE, ALLOWED_EXTENSIONS, app
+from src.shared import *
 from views import views
-
-# load json and create model
-json_file = open('cnn_model/model_lighter.json', 'r')
-loaded_model_json = json_file.read()
-json_file.close()
-model = model_from_json(loaded_model_json)
-# load weights into new model
-model.load_weights('cnn_model/weights_model_lighter.h5')
-print("Loaded model from disk")
-
 
 # @app.route('/upload', methods=['GET', 'POST'])
 # def upload_file():
@@ -70,18 +55,25 @@ print("Loaded model from disk")
 #         filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 #
 #
-# def get_melspectrogram(audio):
-#     X = []
-#     X.append(lr.feature.melspectrogram(y=audio, sr=SAMPLE_RATE, n_mels=50))
-#     return X
+
 
 
 if __name__ == '__main__':
+    shared.init()
+    # load json and create model
+    json_file = open('cnn_model/model_lighter.json', 'r')
+    loaded_model_json = json_file.read()
+    json_file.close()
+    shared.model = model_from_json(loaded_model_json)
+    # load weights into new model
+    shared.model.load_weights('cnn_model/weights_model_lighter.h5')
+    print("Loaded model from disk")
+
     app.register_blueprint(views, url_prefix="/")
     app.register_blueprint(classify, url_prefix="/classify")
 
     # optimizer = keras.optimizers.Adam(lr=0.001)
-    model.compile(optimizer='adam', loss=keras.losses.binary_crossentropy,
+    shared.model.compile(optimizer='adam', loss=keras.losses.binary_crossentropy,
                   metrics=['accuracy'
                            ])
     app.run(debug=True)
