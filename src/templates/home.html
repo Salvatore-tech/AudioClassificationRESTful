@@ -12,20 +12,31 @@
         </p>
         <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
             <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
-                Launch demo modal
+                Detect
             </button>
         </div>
     </div>
 </div>
 
+{% with failures = get_flashed_messages(category_filter=["failure"]) %}
+{% if failures %}
+<div class="position-absolute bottom-0 end-0" style="padding: 2px;">
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <strong>{{failures[0]}}</strong>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" asria-label="Close"></button>
+    </div>
+</div>
+{% endif %}
+{% endwith %}
 
-{% with messages = get_flashed_messages() %}
-{% if messages %}
-<ul class=flashes>
-    {% for message in messages %}
-    <li>{{ message }}</li>
-    {% endfor %}
-</ul>
+{% with successes = get_flashed_messages(category_filter=["success"]) %}
+{% if successes %}
+<div class="position-absolute bottom-0 end-0" style="padding: 2px;">
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <strong>{{successes[0]}}</strong>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+</div>
 {% endif %}
 {% endwith %}
 
@@ -35,20 +46,19 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLabel">Upload audio</h5>
+                <h5 class="modal-title" id="exampleModalLabel">Upload audio file</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <div class="mb-3">
-                    <label for="formFile" class="form-label">Default file input example</label>
+                    <!--                    <label for="formFile" class="form-label">Default file input example</label>-->
                     <input class="form-control" type="file" id="formFile">
                 </div>
             </div>
             <div class="modal-footer">
                 <form action="/classify/predict" method="post">
                     <button name="saveChanges" value="saveChanges" class="btn btn-primary" data-bs-dismiss="modal">
-                        Save
-                        changes
+                        Submit
                     </button>
                 </form>
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -56,6 +66,7 @@
         </div>
     </div>
 </div>
+
 
 {% endblock %}
 {% block additionalJs %}

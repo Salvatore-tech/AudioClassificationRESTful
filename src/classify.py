@@ -13,7 +13,6 @@ from src.shared import UPLOAD_FOLDER, SAMPLE_RATE
 
 ALLOWED_AUDIO_EXTENSIONS = {'aiff'}
 classify = Blueprint("classify", __name__)
-current_filename = ''
 
 @classify.route("/upload", methods=['POST'])
 def upload_file():
@@ -35,6 +34,7 @@ def upload_file():
 
     filename = secure_filename(uploaded_file.filename)
     fullpath_to_uploaded_file = os.path.join(UPLOAD_FOLDER, filename)
+    global current_filename
     current_filename = fullpath_to_uploaded_file
     print('Uploaded new file: ' + filename)
     if not os.path.exists(fullpath_to_uploaded_file):
@@ -49,15 +49,14 @@ def allowed_file(filename):
 
 @classify.route("/predict", methods=['POST'])
 def predict_whale():
-    audio, _ = lr.load(os.path.join(UPLOAD_FOLDER, 'train29997.aiff'), sr=SAMPLE_RATE, res_type='kaiser_fast')
+    audio, _ = lr.load(current_filename, sr=SAMPLE_RATE, res_type='kaiser_fast')
     mel_spectrogram = np.array(get_melspectrogram(audio))
     mel_spectrogram = tf.expand_dims(mel_spectrogram, axis=-1)
     prediction = shared.model.predict_classes(mel_spectrogram).ravel()[0]
     if (np.bool(prediction)):
-        flash('Congrats! Whale detected')
+        flash('Congrats! Whale detected', 'success')
     else:
-        flash('That was not a whale, try again')
-    # print('Predicted: ' + np.str(prediction))
+        flash('That was not a whale, try again', 'failure')
     return redirect("/home")
 
 def get_melspectrogram(audio):
