@@ -1,4 +1,3 @@
-import json
 import os
 import sys
 
@@ -7,14 +6,14 @@ import librosa.display
 import numpy as np
 import pandas as pd
 import tensorflow as tf
+from keras import backend as K
 from keras import models
 from keras.api import keras
 from keras.callbacks import EarlyStopping
 from keras.layers import *
 from matplotlib import pyplot as plt
-from sklearn.metrics import confusion_matrix, classification_report, PrecisionRecallDisplay, precision_recall_curve
+from sklearn.metrics import confusion_matrix, classification_report
 from sklearn.model_selection import train_test_split
-from keras import backend as K
 
 JPG_EXTENSION = '.jpg'
 
@@ -130,7 +129,6 @@ def get_simple_cnn():
                      metrics=['acc', f1_m, precision_m, recall_m])
     return CNNmodel
 
-
 def get_cnn_with_4_layers():
     input_shape = (50, 8, 1)
     CNNmodel = models.Sequential()
@@ -145,12 +143,8 @@ def get_cnn_with_4_layers():
     CNNmodel.add(MaxPooling2D((2, 2), padding='same'))
     CNNmodel.add(Dropout(0.25))
 
-    CNNmodel.add(Conv2D(64, (3, 3), activation='relu', padding='same'))
-    CNNmodel.add(MaxPooling2D((2, 2), padding='same'))
-    CNNmodel.add(Dropout(0.25))
-
     # The third convolution
-    CNNmodel.add(Conv2D(64, (3, 3), activation='relu', padding='same'))
+    CNNmodel.add(Conv2D(128, (3, 3), activation='relu', padding='same'))
     CNNmodel.add(MaxPooling2D((2, 2), padding='same'))
     CNNmodel.add(Dropout(0.25))
 
@@ -158,7 +152,7 @@ def get_cnn_with_4_layers():
     CNNmodel.add(Flatten())
 
     # 512 neuron hidden layer
-    CNNmodel.add(Dense(128, activation='relu'))
+    CNNmodel.add(Dense(512, activation='relu'))
     CNNmodel.add(Dropout(0.5))
 
     # Only 1 output neuron. It will contain a value from 0-1 where 0 for 1 class ('dandelions') and 1 for the other ('grass')
@@ -175,35 +169,42 @@ def get_cnn_with_4_layers():
 
 
 def save_model_to_disk(model):
-    # serialize model to JSON
-    model_json = model.to_json()
-    with open(os.path.join(OUTPUT_PATH, "model_lighter.json"), "w") as json_file:
-        json_file.write(model_json)
-    # serialize weights to HDF5
-    model.save_weights(os.path.join(OUTPUT_PATH, "weights_model_lighter.h5"))
+    model.save("ligher_model")
+    # # serialize model to JSON
+    # model_json = model.to_json()
+    # with open(os.path.join(OUTPUT_PATH, "model_lighter.json"), "w") as json_file:
+    #     json_file.write(model_json)
+    # # serialize weights to HDF5
+    # model.save_weights(os.path.join(OUTPUT_PATH, "weights_model_lighter.h5"))
     print("Saved model to disk")
 
 
-def get_X_and_Y(limit=False):
+def get_features(limit=False, unsupervisioned=False):
     global X, Y
     X = []
     Y = []
     # Load dataset
     if limit:
-        df = pd.read_csv(os.path.join(DATASET_ROOT, "train.csv"), nrows=100)
+        df = pd.read_csv(os.path.join(DATASET_ROOT, "train.csv"), nrows=1000)
     else:
         df = pd.read_csv(os.path.join(DATASET_ROOT, "train.csv"))
-    for index, row in df.iterrows():
-        full_track_name = TRAINING_PATH + row["clip_name"]
-        audio, _ = lr.load(full_track_name, sr=SAMPLE_RATE, res_type='kaiser_fast')
-        X.append(get_melspectrogram(audio))
-        Y.append(row["label"])
-
-    return X, Y
+    if(unsupervisioned):
+        for index, row in df.iterrows():
+            full_track_name = TRAINING_PATH + row["clip_name"]
+            audio, _ = lr.load(full_track_name, sr=SAMPLE_RATE, res_type='kaiser_fast')
+            X.append(np.mean(get_melspectrogram(audio), axis=1))
+        return X
+    else:
+        for index, row in df.iterrows():
+            full_track_name = TRAINING_PATH + row["clip_name"]
+            audio, _ = lr.load(full_track_name, sr=SAMPLE_RATE, res_type='kaiser_fast')
+            X.append(get_melspectrogram(audio))
+            Y.append(row["label"])
+        return X, Y
 
 
 if __name__ == "__main__":
-    get_X_and_Y()
+    get_features(True)
 
     X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=0.25, random_state=123,
                                                         stratify=Y)
